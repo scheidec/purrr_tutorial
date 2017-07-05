@@ -1,0 +1,8 @@
+"0","knitr::opts_chunk$set(echo = TRUE)"
+"0","library(purrr)"
+"0","library(devtools)"
+"0","library(repurrrsive)"
+"0","library(listviewer)"
+"0","library(knitr)"
+"0","library(tibble)"
+"0","library(tidyverse)"
