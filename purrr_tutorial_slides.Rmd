@@ -51,7 +51,12 @@ library(tidyverse)
     - several versions of `map()` that allow you to specify the structure of your output
     - can easily nest `map()` functions inside of each other.
     
-- Disadvantages: wierd working with dates, purrr/purrrlyr conflicts
+- Disadvantages: 
+    - newer package, so conflicts arise when it is updated
+        - i.e. `purrr`/`purrrlyr` conflicts
+            - motivation to use `packrat`!
+    - had some issues working with dates
+
 
 #  Use GoT dataset to run through examples
 
@@ -181,7 +186,7 @@ got_char %>% tail() %>% kable()
 
 - Each GoT character can have aliases, which are stored as a list for each character.
 
-- We want to present each character's aliases combined together in one variable, separated by " | ".  
+- We want to present each character's aliases combined together in one element of a list, separated by " | ".  
 
 - There are three ways to go about doing this using `map()`:
 
@@ -473,6 +478,36 @@ got_chars %>%
 
 ```
 
+## Using `purrr` to avoid `dplyr::rowwise()`
+
+- For common tasks where you need to have operations applied to each row of a dataframe, you may think of using `dplyr::rowwise()` to accomplish this:
+
+```{r}
+
+iris %>% 
+  rowwise() %>% 
+  mutate(Max.Length = max(Sepal.Length, Petal.Length)) %>% 
+  ungroup() %>% 
+  head(n=3) %>% 
+  kable()
+
+```
+
+## Using `purrr` to avoid `dplyr::rowwise()`
+
+- But we can use `purrr:map2()` to accomplish this in a quicker and more readable fashion:
+
+```{r}
+
+iris %>% 
+  mutate(
+    Max.Length = map2(Sepal.Length, Petal.Length, max)
+  ) %>% 
+  head(n=3) %>% 
+  kable()
+
+```
+
 # `purrr` success story
 
 ## Scenario
@@ -482,7 +517,6 @@ got_chars %>%
 ## Long, tedious non-`purrr` way to do this
 
 - I had over 1000 lines of code to do this at first with a different `read_excel()` call for each table 
-- I had over 1000 lines of code to do this at first with a different `read_excel()` call for each table
 - :(
 - https://gitlab.com/methodsconsultants/optimization-group/marketing-impact/commit/c70aef043c4989b12b88fbf19f1fea6b9a9edd60
 

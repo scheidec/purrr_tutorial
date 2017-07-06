@@ -149,7 +149,20 @@
 <li>several versions of <code>map()</code> that allow you to specify the structure of your output</li>
 <li>can easily nest <code>map()</code> functions inside of each other.</li>
 </ul></li>
-<li>Disadvantages: wierd working with dates, purrr/purrrlyr conflicts</li>
+<li>Disadvantages:
+
+<ul>
+<li>newer package, so conflicts arise when it is updated
+
+<ul>
+<li>i.e. <code>purrr</code>/<code>purrrlyr</code> conflicts
+
+<ul>
+<li>motivation to use <code>packrat</code>!</li>
+</ul></li>
+</ul></li>
+<li>had some issues working with dates</li>
+</ul></li>
 </ul>
 
 </article></slide><slide class='segue dark nobackground level1'><hgroup class = 'auto-fadein'><h2>Use GoT dataset to run through examples</h2></hgroup><article  id="use-got-dataset-to-run-through-examples" class="smaller ">
@@ -398,7 +411,7 @@ got_char %&gt;% tail() %&gt;% kable()</pre>
 
 <ul>
 <li><p>Each GoT character can have aliases, which are stored as a list for each character.</p></li>
-<li><p>We want to present each character&#39;s aliases combined together in one variable, separated by &quot; | &quot;.</p></li>
+<li><p>We want to present each character&#39;s aliases combined together in one element of a list, separated by &quot; | &quot;.</p></li>
 <li><p>There are three ways to go about doing this using <code>map()</code>:</p>
 
 <ol>
@@ -715,9 +728,7 @@ map2_chr(nms, birth, my_fun) %&gt;%
 
 </article></slide><slide class=''><hgroup><h2>Parallel mapping using <code>pmap()</code></h2></hgroup><article  id="parallel-mapping-using-pmap-1" class="smaller ">
 
-<ul>
-<li>Function creates sentence for each character stating name, number of aliases and allegiances:</li>
-</ul>
+<p>Function creates sentence for each character stating name, number of aliases and allegiances:</p>
 
 <pre class = 'prettyprint lang-r'>df &lt;- got_chars %&gt;% {
   tibble::tibble(
@@ -896,6 +907,102 @@ dfs %&gt;% reduce(full_join, by = &quot;name&quot;)</pre>
 </tr>
 </table>
 
+</article></slide><slide class=''><hgroup><h2>Using <code>purrr</code> to avoid <code>dplyr::rowwise()</code></h2></hgroup><article  id="using-purrr-to-avoid-dplyrrowwise" class="smaller ">
+
+<ul>
+<li>For common tasks where you need to have operations applied to each row of a dataframe, you may think of using <code>dplyr::rowwise()</code> to accomplish this:</li>
+</ul>
+
+<pre class = 'prettyprint lang-r'>iris %&gt;% 
+  rowwise() %&gt;% 
+  mutate(Max.Length = max(Sepal.Length, Petal.Length)) %&gt;% 
+  ungroup() %&gt;% 
+  head(n=3) %&gt;% 
+  kable()</pre>
+
+<table class = 'rmdtable'>
+<tr class="header">
+<th align="right">Sepal.Length</th>
+<th align="right">Sepal.Width</th>
+<th align="right">Petal.Length</th>
+<th align="right">Petal.Width</th>
+<th align="left">Species</th>
+<th align="right">Max.Length</th>
+</tr>
+<tr class="odd">
+<td align="right">5.1</td>
+<td align="right">3.5</td>
+<td align="right">1.4</td>
+<td align="right">0.2</td>
+<td align="left">setosa</td>
+<td align="right">5.1</td>
+</tr>
+<tr class="even">
+<td align="right">4.9</td>
+<td align="right">3.0</td>
+<td align="right">1.4</td>
+<td align="right">0.2</td>
+<td align="left">setosa</td>
+<td align="right">4.9</td>
+</tr>
+<tr class="odd">
+<td align="right">4.7</td>
+<td align="right">3.2</td>
+<td align="right">1.3</td>
+<td align="right">0.2</td>
+<td align="left">setosa</td>
+<td align="right">4.7</td>
+</tr>
+</table>
+
+</article></slide><slide class=''><hgroup><h2>Using <code>purrr</code> to avoid <code>dplyr::rowwise()</code></h2></hgroup><article  id="using-purrr-to-avoid-dplyrrowwise-1" class="smaller ">
+
+<ul>
+<li>But we can use <code>purrr:map2()</code> to accomplish this in a quicker and more readable fashion:</li>
+</ul>
+
+<pre class = 'prettyprint lang-r'>iris %&gt;% 
+  mutate(
+    Max.Length = map2(Sepal.Length, Petal.Length, max)
+  ) %&gt;% 
+  head(n=3) %&gt;% 
+  kable()</pre>
+
+<table class = 'rmdtable'>
+<tr class="header">
+<th align="right">Sepal.Length</th>
+<th align="right">Sepal.Width</th>
+<th align="right">Petal.Length</th>
+<th align="right">Petal.Width</th>
+<th align="left">Species</th>
+<th align="left">Max.Length</th>
+</tr>
+<tr class="odd">
+<td align="right">5.1</td>
+<td align="right">3.5</td>
+<td align="right">1.4</td>
+<td align="right">0.2</td>
+<td align="left">setosa</td>
+<td align="left">5.1</td>
+</tr>
+<tr class="even">
+<td align="right">4.9</td>
+<td align="right">3.0</td>
+<td align="right">1.4</td>
+<td align="right">0.2</td>
+<td align="left">setosa</td>
+<td align="left">4.9</td>
+</tr>
+<tr class="odd">
+<td align="right">4.7</td>
+<td align="right">3.2</td>
+<td align="right">1.3</td>
+<td align="right">0.2</td>
+<td align="left">setosa</td>
+<td align="left">4.7</td>
+</tr>
+</table>
+
 </article></slide><slide class='segue dark nobackground level1'><hgroup class = 'auto-fadein'><h2><code>purrr</code> success story</h2></hgroup><article  id="purrr-success-story" class="smaller ">
 
 </article></slide><slide class=''><hgroup><h2>Scenario</h2></hgroup><article  id="scenario" class="smaller ">
@@ -907,7 +1014,6 @@ dfs %&gt;% reduce(full_join, by = &quot;name&quot;)</pre>
 </article></slide><slide class=''><hgroup><h2>Long, tedious non-<code>purrr</code> way to do this</h2></hgroup><article  id="long-tedious-non-purrr-way-to-do-this" class="smaller ">
 
 <ul>
-<li>I had over 1000 lines of code to do this at first with a different <code>read_excel()</code> call for each table</li>
 <li>I had over 1000 lines of code to do this at first with a different <code>read_excel()</code> call for each table</li>
 <li>:(</li>
 <li><a href='https://gitlab.com/methodsconsultants/optimization-group/marketing-impact/commit/c70aef043c4989b12b88fbf19f1fea6b9a9edd60' title=''>https://gitlab.com/methodsconsultants/optimization-group/marketing-impact/commit/c70aef043c4989b12b88fbf19f1fea6b9a9edd60</a></li>
